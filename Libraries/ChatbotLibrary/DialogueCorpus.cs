@@ -59,15 +59,36 @@ namespace ChatbotLibrary
         //  The end result of calling the Process() method should be a list of DialogueCorpusItems added
         //  to the itemList. 
         //
-        public void Process(string rawData)
+        public void Process(MovieLines movieLines, MovieConversations movieConversations)
         {
-            // Add (a lot of ...) code here, possibly calling other methods (e.g. the ones below).
+            // Process the raw data
+            movieLines.Process();
+            movieConversations.MapIdToUtterance(movieLines);
+
+            // Add all sentence pairs and process them
+            foreach (MovieConversationItem conversation in movieConversations.Conversations)
+            { 
+                foreach (DialogueCorpusItem sentencePair in conversation.GetSentencePairs())
+                {
+                    sentencePair.Clean();
+                    sentencePair.Tokenize();
+                    itemList.Add(sentencePair);
+                }
+            }
+
+            GenerateVocabulary();
+            ComputeIDFs();
+            ComputeTFIDFVectors();
         }
 
         // Should be called from Process(...)
         public void GenerateVocabulary()
         {
-
+            vocabulary = new Vocabulary();
+            foreach (DialogueCorpusItem sentencePair in itemList)
+            {
+                vocabulary.Add(sentencePair.Tokens);
+            }
         }
 
 
@@ -83,7 +104,7 @@ namespace ChatbotLibrary
         // Note: This method assumes that GenerateVocabulary() has been executed first.
         public void ComputeIDFs()
         {
-            // Add code here ...
+            vocabulary.Process();
         }
 
 
@@ -106,6 +127,11 @@ namespace ChatbotLibrary
         {
             get { return vocabulary; }
             set { vocabulary = value; }
+        }
+
+        public int Size
+        {
+            get { return itemList.Count; }
         }
     }
 }

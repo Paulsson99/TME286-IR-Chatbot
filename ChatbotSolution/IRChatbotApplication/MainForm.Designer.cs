@@ -33,6 +33,8 @@ namespace IRChatbotApplication
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadRawDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadMoveLinesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadConversationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveDialogueCorpusToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainTabControl = new System.Windows.Forms.TabControl();
@@ -76,10 +78,26 @@ namespace IRChatbotApplication
             // 
             // loadRawDataToolStripMenuItem
             // 
+            this.loadRawDataToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.loadMoveLinesToolStripMenuItem,
+            this.loadConversationsToolStripMenuItem});
             this.loadRawDataToolStripMenuItem.Name = "loadRawDataToolStripMenuItem";
             this.loadRawDataToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
             this.loadRawDataToolStripMenuItem.Text = "Load raw data";
-            this.loadRawDataToolStripMenuItem.Click += new System.EventHandler(this.loadRawDataToolStripMenuItem_Click);
+            // 
+            // loadMoveLinesToolStripMenuItem
+            // 
+            this.loadMoveLinesToolStripMenuItem.Name = "loadMoveLinesToolStripMenuItem";
+            this.loadMoveLinesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadMoveLinesToolStripMenuItem.Text = "Load move lines";
+            this.loadMoveLinesToolStripMenuItem.Click += new System.EventHandler(this.loadMoveLinesToolStripMenuItem_Click);
+            // 
+            // loadConversationsToolStripMenuItem
+            // 
+            this.loadConversationsToolStripMenuItem.Name = "loadConversationsToolStripMenuItem";
+            this.loadConversationsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadConversationsToolStripMenuItem.Text = "Load conversations";
+            this.loadConversationsToolStripMenuItem.Click += new System.EventHandler(this.loadConversationsToolStripMenuItem_Click);
             // 
             // saveDialogueCorpusToolStripMenuItem
             // 
@@ -270,5 +288,7 @@ namespace IRChatbotApplication
         private System.Windows.Forms.ListBox dialogueListBox;
         private System.Windows.Forms.ListBox dialogueCorpusListBox;
         private System.Windows.Forms.ToolStripMenuItem saveDialogueCorpusToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadMoveLinesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadConversationsToolStripMenuItem;
     }
 }

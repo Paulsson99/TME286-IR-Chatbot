@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ChatbotLibrary
@@ -16,7 +17,9 @@ namespace ChatbotLibrary
         //
         private string query; // = S_1 in the assignment (used for computing cosine similarity) (need not be a question, though!)
         private string response; // = S_2 in the assignment
-        private List<double> tfIdfVector; // Must be generated - see below.
+        private SparseVector tfIdfVector; // Must be generated - see below.
+
+        private string[] tokens;
         
         // You can add fields here, if you also wish to store the tokenized version of
         // each sentence, or (better) the indices of the words (tokens) from the vocabulary
@@ -40,13 +43,47 @@ namespace ChatbotLibrary
             this.response = response;
         }
 
+        public void Clean()
+        {
+            query = CleanString(query);
+            response = CleanString(response);
+        }
+
+        private string CleanString(string str)
+        {
+            if (str == null)
+            {
+                return null;
+            }
+            string cleanString = str.ToLower();
+            cleanString = cleanString.Replace('\t', ' ');
+            cleanString = Regex.Replace(cleanString, @"[^\w.!?%,´' ]+", "");
+            return cleanString;
+        }
+
+        public void Tokenize()
+        {
+            tokens = query.Split(new char[] { ' ', '.', '!', '?', ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
         public void ComputeTFIDFVector(Vocabulary dictionary)
-        {            
+        {
             // Write this method
             // It should generate the (note!) normalized (to unit length)
-            // TF-IDF vector for the query sentence (S_1) 
+            // TF-IDF vector for the query sentence (S_1)
+            tfIdfVector = new SparseVector();
+
+            foreach (string token in tokens)
+            {
+                int index = dictionary.Words.BinarySearch(token);
+                if (index >= 0)
+                {
+                    tfIdfVector[index] += dictionary.IDFs[index];
+                }
+            }
+            tfIdfVector.Normalize();
         }
-        public List<double> TFIDFVector
+        public SparseVector TFIDFVector
         {
             get { return tfIdfVector; }
             set { tfIdfVector = value; }
@@ -65,5 +102,7 @@ namespace ChatbotLibrary
             get { return response; }
             set { response = value; }
         }
+
+        public string[] Tokens { get { return tokens; } }
     }
 }

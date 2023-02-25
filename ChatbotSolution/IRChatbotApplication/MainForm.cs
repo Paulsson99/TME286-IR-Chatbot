@@ -14,10 +14,15 @@ namespace IRChatbotApplication
 {
     public partial class MainForm : Form
     {
+        private const string TSV_FILTER = "tab-separated values (*.tsv)|*.tsv";
+        private const string TXT_FILTER = "Text files (*.txt)|*.txt";
+
         private DialogueCorpus corpus = null; // The dialogue corpus, consisting of sentence pairs.
         private Chatbot chatbot;
 
         // Add fields here as needed, e.g. for the raw data.
+        MovieConversations movieConversations;
+        MovieLines movieLines;
 
         public MainForm()
         {
@@ -25,16 +30,6 @@ namespace IRChatbotApplication
             if (!DesignMode)
             {
                 inputTextBox.InputReceived += new EventHandler<StringEventArgs>(HandleInputReceived);
-            }
-        }
-
-        private void loadRawDataToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                // Write code here for loading and parsing raw data.
-
-                generateDialogueCorpusButton.Enabled = true;
             }
         }
 
@@ -49,6 +44,7 @@ namespace IRChatbotApplication
         {
             generateChatBotButton.Enabled = false;
             chatbot = new Chatbot();
+            chatbot.Initialize();
             chatbot.SetDialogueCorpus(corpus);
             inputTextBox.Enabled = true;
             mainTabControl.SelectedTab = chatTabPage;
@@ -69,7 +65,10 @@ namespace IRChatbotApplication
         {
             string inputSentence = e.Information;
 
-            // Add code here ...
+            string response = chatbot.GenerateResponse(inputSentence);
+
+            dialogueListBox.Items.Insert(0, inputSentence);
+            dialogueListBox.Items.Insert(0, response);
         }
 
         // To do: Write this method. Hint: Use the StreamWriter class
@@ -79,6 +78,21 @@ namespace IRChatbotApplication
             // This method should save the dialogue corpus, with one exchange per
             // row, i.e. S_1, tab-character ("\t"), S_2. As mentioned in the assignment
             // you must hand in this file *in addition* to the raw data.
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = TXT_FILTER;
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    using (StreamWriter dataWriter = new StreamWriter(saveFileDialog.FileName))
+                    {
+                        foreach (DialogueCorpusItem sentencePair in corpus.ItemList)
+                        {
+                            dataWriter.WriteLine(sentencePair.AsString());
+                        }
+                        dataWriter.Close();
+                    }
+                }
+            }
         }
 
         private void generateDialogueCorpusButton_Click(object sender, EventArgs e)
@@ -87,9 +101,76 @@ namespace IRChatbotApplication
             // Add methods (in the DialogueCorpus class) for processing the raw
             // data, e.g. corpus.Process(rawData) ...
 
+            corpus.Process(movieLines, movieConversations);
 
             generateChatBotButton.Enabled = true;
             saveDialogueCorpusToolStripMenuItem.Enabled = true;
+        }
+
+        private void loadMoveLinesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = TSV_FILTER;
+                openFileDialog.RestoreDirectory = true;
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    ImportMoveLines(openFileDialog.FileName);
+                }
+
+                if (movieLines != null && movieConversations != null)
+                {   
+                    // Enable next step when all the raw data is read
+                    generateDialogueCorpusButton.Enabled = true;
+                }
+            }
+        }
+
+        private void ImportMoveLines(string fileName)
+        {
+            movieLines = new MovieLines();
+            using (StreamReader dataReader = new StreamReader(fileName))
+            {
+                while (!dataReader.EndOfStream)
+                {
+                    string rawLine = dataReader.ReadLine();
+                    movieLines.Add(rawLine);
+                }
+                dataReader.Close();
+            }
+        }
+
+        private void loadConversationsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = TSV_FILTER;
+                openFileDialog.RestoreDirectory = true;
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    ImportMoveConversations(openFileDialog.FileName);
+                }
+
+                if (movieLines != null && movieConversations != null)
+                {
+                    // Enable next step when all the raw data is read
+                    generateDialogueCorpusButton.Enabled = true;
+                }
+            }
+        }
+
+        private void ImportMoveConversations(string fileName)
+        {
+            movieConversations = new MovieConversations();
+            using (StreamReader dataReader = new StreamReader(fileName))
+            {
+                while (!dataReader.EndOfStream)
+                {
+                    string rawLine = dataReader.ReadLine();
+                    movieConversations.Add(rawLine);
+                }
+                dataReader.Close();
+            }
         }
     }
 }
