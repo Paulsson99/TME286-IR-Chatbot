@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using ChatbotLibrary;
 
@@ -23,6 +24,9 @@ namespace IRChatbotApplication
         // Add fields here as needed, e.g. for the raw data.
         MovieConversations movieConversations;
         MovieLines movieLines;
+
+        // Threads for slow processes
+        private Thread generateDialogueCorpusThread;
 
         public MainForm()
         {
@@ -97,14 +101,34 @@ namespace IRChatbotApplication
 
         private void generateDialogueCorpusButton_Click(object sender, EventArgs e)
         {
+            generateDialogueCorpusButton.Enabled = false;
+            generateDialogueCorpusThread = new Thread(new ThreadStart(() => generateDialogueCorpus()));
+            generateDialogueCorpusThread.IsBackground = true;
+            generateDialogueCorpusThread.Start();
+        }
+
+        private void generateDialogueCorpus()
+        {
             corpus = new DialogueCorpus();
             // Add methods (in the DialogueCorpus class) for processing the raw
             // data, e.g. corpus.Process(rawData) ...
 
             corpus.Process(movieLines, movieConversations);
 
-            generateChatBotButton.Enabled = true;
-            saveDialogueCorpusToolStripMenuItem.Enabled = true;
+            ThreadSafeToggleButtonEnabled(generateChatBotButton, true);
+            ThreadSafeToggleMenuItemEnabled(saveDialogueCorpusToolStripMenuItem, true);
+        }
+
+        private void ThreadSafeToggleButtonEnabled(ToolStripButton button, Boolean enabled)
+        {
+            if (InvokeRequired) { this.Invoke(new MethodInvoker(() => button.Enabled = enabled)); }
+            else { button.Enabled = enabled; }
+        }
+
+        private void ThreadSafeToggleMenuItemEnabled(ToolStripMenuItem menuItem, Boolean enabled)
+        {
+            if (InvokeRequired) { this.Invoke(new MethodInvoker(() => menuItem.Enabled = enabled)); }
+            else { menuItem.Enabled = enabled; }
         }
 
         private void loadMoveLinesToolStripMenuItem_Click(object sender, EventArgs e)

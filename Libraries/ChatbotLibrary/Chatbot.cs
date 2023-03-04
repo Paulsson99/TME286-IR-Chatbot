@@ -74,7 +74,6 @@ namespace ChatbotLibrary
             int randomIndex = randomNumberGenerator.Next(numberOfMatches);
             int selectedIndex = topIndex[randomIndex];
             DialogueCorpusItem selectedItem = dialogueCorpus.ItemList[selectedIndex];
-            Console.WriteLine(selectedItem.AsString());
             return selectedItem.Response;
         }
 
